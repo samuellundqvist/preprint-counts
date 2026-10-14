@@ -1,0 +1,895 @@
+<meta charset="utf-8">
+<title>Math Announcements on arXiv</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page:        #f2f2ef;
+    --surface:     #fbfbf9;
+    --ink:         #26272b;
+    --ink-2:       #55565b;
+    --muted:       #7c7a75;
+    --grid:        #e4e3dc;
+    --rule:        #d9d8d0;
+    --series:      #2a78d6;
+    --series-wash: rgba(42,120,214,0.11);
+    --series-soft: rgba(42,120,214,0.34);
+    --chip:        #ecebe5;
+    --focus:       #2a78d6;
+    --shadow:      rgba(11,11,11,0.07);
+    --yr1:         #86b6ef;
+    --yr2:         #5598e7;
+    --yr3:         #2a78d6;
+    --yr4:         #1c5cab;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page:        #0e0f11;
+      --surface:     #1a1b1e;
+      --ink:         #e8e8e4;
+      --ink-2:       #b4b3ac;
+      --muted:       #93918a;
+      --grid:        #2e2f33;
+      --rule:        #34353a;
+      --series:      #3987e5;
+      --series-wash: rgba(57,135,229,0.15);
+      --series-soft: rgba(57,135,229,0.40);
+      --chip:        #26272b;
+      --focus:       #6da7ec;
+      --shadow:      rgba(0,0,0,0.4);
+      --yr1:         #1c5cab;
+      --yr2:         #3987e5;
+      --yr3:         #86b6ef;
+      --yr4:         #cde2fb;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page:        #0e0f11;
+    --surface:     #1a1b1e;
+    --ink:         #e8e8e4;
+    --ink-2:       #b4b3ac;
+    --muted:       #93918a;
+    --grid:        #2e2f33;
+    --rule:        #34353a;
+    --series:      #3987e5;
+    --series-wash: rgba(57,135,229,0.15);
+    --series-soft: rgba(57,135,229,0.40);
+    --chip:        #26272b;
+    --focus:       #6da7ec;
+    --shadow:      rgba(0,0,0,0.4);
+    --yr1:         #1c5cab;
+    --yr2:         #3987e5;
+    --yr3:         #86b6ef;
+    --yr4:         #cde2fb;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .mono { font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace; }
+
+  .wrap {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 40px 24px 72px;
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+  }
+
+  header { display: flex; flex-direction: column; gap: 14px; }
+
+  .eyebrow {
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(28px, 4.2vw, 42px);
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    font-weight: 620;
+    text-wrap: balance;
+  }
+
+  .standfirst { margin: 0; max-width: 68ch; color: var(--ink-2); font-size: 16px; }
+
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .kpi { background: var(--surface); padding: 16px 18px; display: flex; flex-direction: column; gap: 3px; }
+  .kpi .label {
+    font-size: 11px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted);
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  .kpi .value { font-size: 25px; font-weight: 600; letter-spacing: -0.015em; }
+  .kpi.hero .value { font-size: 50px; line-height: 1.05; font-weight: 620; }
+  .kpi .sub { font-size: 12.5px; color: var(--ink-2); }
+
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-end;
+    padding-bottom: 4px; border-bottom: 1px solid var(--rule);
+  }
+  .control { display: flex; flex-direction: column; gap: 6px; }
+  .control > span {
+    font-size: 11px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted);
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  .seg { display: flex; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; }
+  .seg button {
+    appearance: none; border: 0; background: var(--surface); color: var(--ink-2);
+    font: inherit; font-size: 13px; padding: 7px 13px; cursor: pointer;
+    transition: background 120ms ease, color 120ms ease;
+  }
+  .seg button:hover { background: var(--chip); color: var(--ink); }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+  .seg button:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+
+  select {
+    appearance: none;
+    font: inherit; font-size: 13px;
+    padding: 7px 30px 7px 12px;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    background: var(--surface);
+    color: var(--ink);
+    cursor: pointer;
+    background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+    background-position: calc(100% - 16px) 55%, calc(100% - 11px) 55%;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+  }
+  select:focus-visible { outline: 2px solid var(--focus); outline-offset: -1px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .panel {
+    background: var(--surface);
+    padding: 13px 14px 9px;
+    display: flex; flex-direction: column; gap: 7px;
+    position: relative;
+  }
+  .panel:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; z-index: 2; }
+  .p-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .p-code { font-size: 12.5px; font-weight: 600; letter-spacing: 0.01em; }
+  .p-last { font-size: 12.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .p-name { font-size: 11.5px; color: var(--muted); line-height: 1.3; min-height: 2.6em; margin-top: -4px; }
+  .panel svg { display: block; width: 100%; height: auto; overflow: visible; }
+
+  .tip {
+    position: fixed; pointer-events: none; z-index: 60;
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 3px;
+    box-shadow: 0 3px 12px var(--shadow);
+    padding: 6px 9px; font-size: 12px; line-height: 1.45; color: var(--ink);
+    opacity: 0; transition: opacity 90ms ease; white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .tip.on { opacity: 1; }
+  .tip b { font-weight: 600; }
+  .tip .t-cat { color: var(--muted); font-size: 11px; display: block; }
+
+  details { border: 1px solid var(--rule); border-radius: 3px; background: var(--surface); }
+  summary {
+    cursor: pointer; padding: 13px 16px; font-size: 13.5px; color: var(--ink-2);
+    list-style: none; display: flex; align-items: center; gap: 8px;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::before { content: "+"; font-family: ui-monospace, monospace; color: var(--muted); }
+  details[open] summary::before { content: "−"; }
+  summary:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+  .t-scroll { overflow-x: auto; border-top: 1px solid var(--rule); max-height: 560px; overflow-y: auto; }
+  table { border-collapse: collapse; font-size: 12px; width: max-content; min-width: 100%; }
+  th, td {
+    padding: 5px 9px; text-align: right; font-variant-numeric: tabular-nums;
+    white-space: nowrap; border-bottom: 1px solid var(--grid);
+  }
+  th {
+    position: sticky; top: 0; background: var(--surface); color: var(--muted);
+    font-weight: 600; font-size: 11px; letter-spacing: 0.03em; z-index: 1;
+    border-bottom: 1px solid var(--rule);
+  }
+  td:first-child, th:first-child {
+    text-align: left; position: sticky; left: 0; background: var(--surface);
+    z-index: 1; border-right: 1px solid var(--grid);
+  }
+  th:first-child { z-index: 3; }
+  tbody tr:hover td { background: var(--chip); }
+
+  .notes {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 22px; padding-top: 8px; border-top: 1px solid var(--rule);
+    font-size: 13.5px; color: var(--ink-2); line-height: 1.65;
+  }
+  .notes h2 {
+    font-size: 11px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted);
+    margin: 0 0 6px; font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-weight: 600;
+  }
+  .notes p { margin: 0 0 9px; }
+  .notes code {
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12px; background: var(--chip); padding: 1px 4px; border-radius: 2px;
+  }
+  .caption { font-size: 12.5px; color: var(--muted); margin: 0; }
+  .credit {
+    display: flex; flex-wrap: wrap; gap: 4px 18px;
+    padding-top: 12px; border-top: 1px solid var(--rule);
+    font-size: 12.5px; color: var(--muted);
+  }
+  .credit p { margin: 0; }
+
+  /* --- year-over-year section (ordinal one-hue blue ramp, older -> newer) --- */
+  .yoy { display: flex; flex-direction: column; gap: 13px; }
+  .yoy > h2 {
+    margin: 0;
+    font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace; font-weight: 600;
+  }
+  .yoy-card {
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 3px;
+    padding: 16px 18px 12px; display: flex; flex-direction: column; gap: 12px;
+  }
+  .yoy-head { display: flex; align-items: baseline; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+  .yoy-legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-2); }
+  .yoy-legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .yoy-key { width: 15px; height: 3px; border-radius: 2px; flex: none; }
+  .yoy-ytd { font-size: 12.5px; font-variant-numeric: tabular-nums; color: var(--ink-2); }
+  .yoy-ytd b { color: var(--ink); font-weight: 600; }
+  .yoy-card svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .yoy-foot { font-size: 12px; color: var(--muted); margin: 0; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow" id="eyebrow"></div>
+    <h1>Monthly <span class="field">mathematics</span> announcements on arXiv</h1>
+    <p class="standfirst">
+      New papers in every <span class="field">mathematics</span> subject class, counted by the month arXiv
+      announced them and harvested from the arXiv API. Each paper is counted
+      once, under the primary category its author chose. <span id="rise-note"></span>
+    </p>
+  </header>
+
+  <div class="kpis" id="kpis"></div>
+
+  <section class="yoy">
+    <h2 id="yoy-h"></h2>
+    <div class="yoy-card">
+      <div class="yoy-head">
+        <span class="yoy-legend" id="yoy-legend"></span>
+        <span class="yoy-ytd" id="yoy-ytd"></span>
+      </div>
+      <div id="yoy"></div>
+    </div>
+    <p class="yoy-foot" id="yoy-foot"></p>
+  </section>
+
+  <div class="controls">
+    <label class="control">
+      <span>Month</span>
+      <select id="sel-month"><option value="all" selected>All months</option></select>
+    </label>
+    <label class="control">
+      <span>Measure</span>
+      <span class="seg" id="seg-metric">
+        <button type="button" data-v="count" aria-pressed="true">Count</button>
+        <button type="button" data-v="index" aria-pressed="false" id="btn-index">Indexed</button>
+      </span>
+    </label>
+    <label class="control">
+      <span>Order</span>
+      <span class="seg" id="seg-sort">
+        <button type="button" data-v="volume" aria-pressed="true">Volume</button>
+        <button type="button" data-v="growth" aria-pressed="false">Growth</button>
+        <button type="button" data-v="alpha" aria-pressed="false">A–Z</button>
+      </span>
+    </label>
+  </div>
+
+  <p class="caption" id="cap"></p>
+
+  <div class="grid" id="grid"></div>
+
+  <details>
+    <summary id="tsum">Table view</summary>
+    <div class="t-scroll" id="tablewrap"></div>
+  </details>
+
+  <div class="notes">
+    <div>
+      <h2>Method</h2>
+      <p>
+        Every record with a <code class="prefix">math.*</code> category was fetched from the arXiv
+        API, then counted in the month arXiv <b>announced</b> it. That month is the
+        <code>YYMM</code> at the start of the paper's identifier, so
+        <code>2609.01234</code> was announced in September 2026. Only new papers
+        count: a replacement version keeps its identifier and is never counted
+        again. Counts use each paper's <b>primary</b> category, so a paper appears
+        exactly once and the columns sum to the field total. Cross-listed
+        appearances are excluded.
+      </p>
+      <p>
+        A class is said to rise or fall when its last twelve months differ from
+        the twelve before by more than twice the counting noise, that is by more
+        than 2&radic;(<i>a</i>&nbsp;+&nbsp;<i>b</i>) for the two totals <i>a</i>
+        and <i>b</i>. Smaller changes are reported as flat: a class with about ten
+        papers a month can move 15% between two years by chance alone.
+      </p>
+      <p id="method-count"></p>
+    </div>
+    <div>
+      <h2>Reading the panels</h2>
+      <p>
+        With <b>All months</b> selected each panel is a monthly line. Pick a single
+        month instead and each panel becomes one column per year, so the same month
+        is compared across years with no seasonal confound — <span class="field">mathematics</span> has a
+        strong seasonal cycle, and comparing like with like removes it.
+      </p>
+      <p id="scale-note"></p>
+    </div>
+    <div>
+      <h2>Caveats</h2>
+      <p>
+        Counts cannot establish cause. A rise in new papers is consistent with
+        more researchers, faster writing, thinner slicing of results, or more
+        <span class="field">mathematics</span> — and this data separates none of those.
+      </p>
+      <p>
+        <b>Every month shown is final.</b> arXiv fixes a paper's identifier at the
+        14:00&nbsp;ET cutoff of the batch it goes out in, and a paper held for
+        moderation gets the identifier of the month it is finally released. A late
+        paper therefore adds to the month it appears in and never changes an
+        earlier one, so the newest month needs no allowance for stragglers. One
+        boundary detail: a batch cut off on a month's last Friday goes public on
+        Sunday evening, which can fall in the next calendar month. It still counts
+        in the month of its identifier.
+      </p>
+      <p id="archive-note" data-archive="math">
+        <code>math.IT</code> and <code>math.MP</code> are absent because arXiv
+        stores them under their canonical names <code>cs.IT</code> and
+        <code>math-ph</code>; they never appear as a primary <code>math.*</code>
+        category. <code>math.GM</code> is where moderators route submissions that
+        miss a class's bar, so its rise reads as a quality signal, not a
+        productivity one.
+      </p>
+    </div>
+  </div>
+
+  <footer class="credit">
+    <p>Thank you to arXiv for use of its open access interoperability.</p>
+    <p>This page was not reviewed or approved by, nor does it necessarily express or
+      reflect the policies or opinions of, arXiv.</p>
+    <p>Code and data: <a href="https://github.com/samuellundqvist/preprint-counts">github.com/samuellundqvist/preprint-counts</a></p>
+  </footer>
+</div>
+
+<div class="tip" id="tip" role="status" aria-live="polite"></div>
+
+<script id="data" type="application/json">{"months": ["2018-01", "2018-02", "2018-03", "2018-04", "2018-05", "2018-06", "2018-07", "2018-08", "2018-09", "2018-10", "2018-11", "2018-12", "2019-01", "2019-02", "2019-03", "2019-04", "2019-05", "2019-06", "2019-07", "2019-08", "2019-09", "2019-10", "2019-11", "2019-12", "2020-01", "2020-02", "2020-03", "2020-04", "2020-05", "2020-06", "2020-07", "2020-08", "2020-09", "2020-10", "2020-11", "2020-12", "2021-01", "2021-02", "2021-03", "2021-04", "2021-05", "2021-06", "2021-07", "2021-08", "2021-09", "2021-10", "2021-11", "2021-12", "2022-01", "2022-02", "2022-03", "2022-04", "2022-05", "2022-06", "2022-07", "2022-08", "2022-09", "2022-10", "2022-11", "2022-12", "2023-01", "2023-02", "2023-03", "2023-04", "2023-05", "2023-06", "2023-07", "2023-08", "2023-09", "2023-10", "2023-11", "2023-12", "2024-01", "2024-02", "2024-03", "2024-04", "2024-05", "2024-06", "2024-07", "2024-08", "2024-09", "2024-10", "2024-11", "2024-12", "2025-01", "2025-02", "2025-03", "2025-04", "2025-05", "2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09"], "total": [2574, 2484, 2771, 2642, 2754, 2584, 2623, 2507, 2618, 3150, 2748, 2758, 2710, 2632, 2919, 2794, 2867, 2451, 2954, 2466, 2905, 3146, 2684, 3103, 2660, 2743, 3033, 2976, 2932, 3347, 3118, 2655, 2979, 2988, 2855, 3065, 2676, 2563, 3262, 2777, 2940, 2944, 2891, 2677, 2904, 2831, 2972, 2989, 2656, 2629, 3091, 2676, 2806, 2859, 2849, 2878, 2987, 3104, 3148, 2848, 2709, 2703, 3370, 2691, 3276, 3034, 2982, 2982, 2980, 3444, 3132, 3059, 3337, 3269, 3368, 3338, 3423, 2991, 3503, 2797, 3324, 3571, 3236, 3519, 3287, 3100, 3588, 3478, 3395, 3334, 3633, 3264, 3949, 4077, 3619, 3947, 3572, 3538, 4397, 4105, 4353, 4930, 5299, 5903, 8360], "cats": [{"code": "math.AC", "name": "Commutative Algebra", "v": [42, 49, 49, 36, 41, 47, 40, 35, 39, 45, 33, 37, 42, 26, 43, 42, 40, 42, 61, 30, 41, 42, 36, 36, 30, 45, 37, 30, 47, 36, 42, 28, 47, 37, 41, 37, 56, 37, 35, 45, 43, 59, 52, 43, 41, 24, 43, 55, 34, 41, 50, 29, 41, 34, 45, 50, 44, 46, 32, 51, 41, 43, 46, 41, 53, 48, 46, 62, 53, 46, 55, 43, 48, 37, 53, 69, 63, 53, 53, 31, 55, 38, 45, 48, 46, 57, 56, 51, 45, 64, 59, 45, 56, 58, 43, 58, 43, 42, 71, 50, 60, 64, 71, 77, 136], "base": 41.08, "total": 4883}, {"code": "math.AG", "name": "Algebraic Geometry", "v": [148, 155, 161, 169, 167, 140, 173, 150, 176, 194, 149, 177, 156, 161, 168, 169, 171, 154, 179, 147, 185, 195, 166, 189, 147, 184, 182, 169, 159, 181, 196, 141, 162, 170, 162, 199, 168, 140, 191, 125, 172, 155, 180, 183, 146, 150, 174, 201, 162, 154, 155, 147, 147, 155, 176, 195, 170, 183, 179, 164, 164, 175, 213, 151, 180, 189, 163, 170, 176, 192, 169, 198, 197, 165, 195, 182, 202, 160, 189, 170, 198, 218, 178, 224, 189, 172, 176, 179, 189, 207, 207, 175, 246, 242, 210, 263, 203, 209, 237, 258, 271, 237, 266, 338, 486], "base": 163.25, "total": 19401}, {"code": "math.AP", "name": "Analysis of PDEs", "v": [293, 254, 294, 275, 301, 284, 286, 246, 271, 356, 325, 299, 309, 291, 347, 308, 325, 285, 307, 248, 276, 342, 301, 333, 302, 277, 355, 361, 352, 387, 353, 294, 326, 338, 326, 334, 263, 288, 381, 322, 304, 334, 349, 286, 343, 307, 339, 368, 337, 300, 388, 332, 317, 314, 330, 300, 307, 372, 330, 311, 313, 285, 357, 328, 381, 346, 319, 342, 343, 409, 372, 312, 389, 371, 346, 395, 383, 353, 427, 341, 412, 384, 402, 395, 381, 364, 395, 403, 406, 364, 460, 339, 437, 419, 417, 474, 388, 431, 570, 458, 452, 555, 584, 664, 977], "base": 290.33, "total": 37626}, {"code": "math.AT", "name": "Algebraic Topology", "v": [56, 41, 30, 31, 45, 26, 50, 43, 51, 64, 48, 33, 38, 46, 45, 47, 59, 32, 53, 42, 47, 49, 49, 54, 64, 47, 40, 39, 46, 59, 56, 44, 33, 40, 51, 51, 24, 26, 50, 40, 45, 56, 49, 42, 47, 45, 43, 42, 43, 36, 57, 37, 41, 42, 45, 50, 48, 61, 49, 43, 47, 47, 51, 38, 59, 53, 41, 50, 43, 64, 52, 56, 39, 52, 46, 47, 47, 45, 54, 51, 39, 60, 65, 57, 44, 36, 54, 40, 56, 50, 50, 48, 59, 59, 48, 54, 53, 56, 65, 55, 54, 71, 71, 75, 85], "base": 43.17, "total": 5096}, {"code": "math.CA", "name": "Classical Analysis & ODEs", "v": [101, 68, 94, 90, 79, 68, 71, 83, 70, 86, 82, 83, 120, 65, 77, 83, 92, 64, 101, 66, 76, 90, 64, 92, 82, 80, 77, 70, 91, 111, 73, 66, 86, 65, 76, 82, 72, 51, 54, 75, 62, 69, 75, 58, 69, 66, 65, 71, 58, 67, 81, 73, 66, 58, 55, 64, 67, 97, 66, 59, 51, 69, 63, 57, 74, 68, 85, 64, 78, 55, 73, 70, 67, 89, 58, 74, 62, 57, 85, 50, 67, 78, 75, 95, 72, 80, 67, 56, 66, 65, 72, 75, 81, 73, 62, 63, 66, 49, 81, 74, 78, 107, 120, 153, 211], "base": 81.25, "total": 7957}, {"code": "math.CO", "name": "Combinatorics", "v": [227, 213, 241, 257, 264, 248, 296, 266, 245, 261, 252, 258, 231, 220, 263, 251, 247, 257, 309, 256, 266, 283, 246, 284, 228, 218, 293, 260, 303, 302, 310, 285, 299, 296, 235, 309, 232, 252, 295, 283, 269, 294, 281, 280, 281, 293, 308, 272, 271, 277, 272, 246, 292, 297, 303, 270, 313, 307, 332, 322, 239, 265, 345, 236, 344, 316, 292, 317, 311, 335, 325, 321, 308, 319, 329, 333, 349, 326, 331, 351, 364, 362, 363, 361, 325, 302, 363, 335, 331, 347, 398, 377, 443, 413, 392, 406, 364, 364, 473, 439, 586, 616, 745, 774, 1021], "base": 252.33, "total": 33877}, {"code": "math.CT", "name": "Category Theory", "v": [17, 22, 24, 12, 30, 19, 16, 21, 22, 19, 20, 23, 15, 19, 23, 24, 22, 17, 21, 23, 23, 21, 29, 9, 16, 23, 27, 32, 33, 29, 24, 18, 21, 32, 23, 24, 30, 31, 31, 28, 41, 25, 19, 18, 28, 18, 25, 27, 25, 27, 27, 30, 37, 21, 25, 29, 22, 24, 27, 20, 23, 27, 42, 26, 44, 30, 24, 33, 18, 33, 39, 26, 28, 25, 39, 45, 29, 32, 24, 25, 26, 34, 28, 19, 32, 34, 40, 26, 31, 32, 26, 32, 38, 43, 33, 29, 23, 41, 32, 37, 31, 40, 50, 42, 55], "base": 20.42, "total": 2894}, {"code": "math.CV", "name": "Complex Variables", "v": [44, 53, 38, 52, 51, 45, 56, 48, 48, 69, 59, 49, 56, 53, 51, 59, 54, 38, 50, 52, 65, 42, 51, 58, 42, 42, 56, 79, 55, 55, 60, 49, 67, 42, 61, 60, 47, 37, 64, 62, 49, 64, 47, 43, 53, 43, 63, 53, 46, 44, 47, 42, 32, 52, 59, 57, 49, 61, 64, 46, 39, 45, 54, 39, 55, 51, 55, 61, 61, 55, 49, 56, 51, 48, 48, 57, 71, 49, 62, 39, 58, 56, 49, 47, 51, 49, 61, 65, 56, 64, 57, 46, 71, 63, 68, 74, 50, 53, 75, 65, 78, 81, 93, 105, 165], "base": 51.0, "total": 5878}, {"code": "math.DG", "name": "Differential Geometry", "v": [128, 141, 133, 124, 143, 113, 129, 134, 117, 149, 131, 117, 148, 121, 143, 130, 132, 116, 126, 135, 156, 165, 135, 131, 137, 125, 132, 139, 119, 141, 163, 127, 153, 150, 111, 133, 130, 110, 146, 116, 148, 128, 126, 134, 139, 130, 141, 137, 128, 122, 148, 140, 125, 144, 113, 153, 123, 144, 134, 137, 125, 119, 146, 122, 146, 160, 147, 132, 172, 166, 129, 131, 145, 140, 144, 166, 165, 147, 156, 120, 140, 160, 134, 157, 145, 147, 158, 156, 166, 141, 187, 141, 182, 184, 175, 191, 183, 163, 173, 190, 210, 276, 218, 316, 517], "base": 129.92, "total": 15711}, {"code": "math.DS", "name": "Dynamical Systems", "v": [110, 108, 135, 98, 121, 103, 109, 121, 116, 123, 107, 119, 152, 135, 125, 142, 125, 122, 118, 118, 141, 144, 122, 120, 122, 113, 137, 127, 123, 151, 133, 107, 125, 147, 125, 153, 122, 117, 168, 121, 141, 131, 120, 111, 127, 118, 135, 144, 104, 125, 145, 107, 113, 131, 106, 123, 159, 142, 128, 109, 115, 128, 154, 115, 145, 127, 130, 120, 115, 138, 137, 142, 159, 136, 156, 140, 168, 118, 154, 120, 131, 169, 144, 134, 146, 107, 145, 177, 144, 117, 152, 136, 146, 193, 153, 162, 167, 145, 221, 192, 190, 188, 229, 228, 305], "base": 114.17, "total": 14482}, {"code": "math.FA", "name": "Functional Analysis", "v": [123, 96, 121, 123, 114, 111, 100, 106, 100, 111, 119, 132, 113, 127, 120, 106, 138, 92, 110, 96, 108, 130, 104, 162, 101, 129, 135, 113, 144, 124, 150, 110, 128, 131, 121, 138, 112, 102, 111, 114, 108, 105, 122, 101, 106, 114, 102, 106, 112, 90, 126, 125, 106, 111, 125, 114, 120, 115, 101, 121, 111, 94, 107, 82, 135, 112, 112, 84, 103, 103, 93, 102, 125, 146, 117, 121, 156, 110, 136, 115, 116, 137, 114, 110, 115, 113, 128, 124, 135, 114, 134, 143, 151, 135, 121, 146, 115, 121, 155, 136, 146, 213, 173, 252, 366], "base": 113.0, "total": 12932}, {"code": "math.GM", "name": "General Mathematics", "v": [9, 21, 13, 13, 13, 15, 8, 16, 9, 11, 13, 14, 30, 29, 22, 19, 37, 9, 24, 14, 25, 27, 27, 24, 19, 25, 38, 17, 25, 29, 23, 20, 18, 27, 13, 24, 34, 24, 37, 27, 23, 24, 18, 20, 26, 26, 20, 24, 28, 14, 13, 27, 22, 31, 9, 19, 26, 21, 23, 17, 26, 21, 21, 29, 33, 27, 18, 25, 11, 31, 23, 27, 20, 7, 67, 34, 31, 27, 35, 10, 28, 19, 14, 34, 27, 28, 35, 31, 27, 38, 32, 27, 44, 32, 37, 36, 38, 52, 52, 55, 38, 46, 62, 49, 85], "base": 12.92, "total": 2762}, {"code": "math.GN", "name": "General Topology", "v": [20, 11, 25, 20, 23, 27, 13, 13, 25, 16, 19, 19, 17, 24, 24, 23, 24, 18, 18, 15, 24, 23, 20, 22, 16, 21, 16, 22, 13, 17, 28, 5, 14, 12, 14, 13, 14, 18, 18, 20, 14, 11, 15, 14, 22, 16, 24, 21, 13, 11, 15, 21, 20, 18, 17, 20, 14, 18, 36, 11, 11, 15, 20, 13, 19, 10, 26, 28, 22, 14, 16, 19, 24, 12, 25, 19, 16, 19, 29, 13, 12, 9, 11, 29, 22, 18, 23, 14, 14, 16, 18, 19, 14, 30, 21, 15, 20, 25, 16, 24, 15, 22, 33, 34, 46], "base": 19.25, "total": 1985}, {"code": "math.GR", "name": "Group Theory", "v": [76, 70, 78, 70, 73, 64, 71, 56, 57, 85, 84, 64, 88, 60, 63, 70, 63, 55, 62, 70, 91, 77, 72, 54, 66, 85, 72, 91, 80, 91, 74, 75, 85, 77, 62, 72, 65, 69, 90, 48, 73, 71, 82, 45, 65, 70, 58, 77, 74, 78, 73, 81, 70, 89, 68, 84, 81, 75, 65, 86, 76, 67, 98, 91, 93, 67, 74, 83, 74, 95, 78, 72, 96, 97, 77, 78, 98, 62, 101, 78, 93, 104, 75, 90, 74, 72, 80, 100, 83, 88, 93, 79, 101, 100, 95, 89, 94, 84, 95, 94, 100, 126, 136, 160, 202], "base": 70.67, "total": 8502}, {"code": "math.GT", "name": "Geometric Topology", "v": [68, 48, 74, 72, 74, 53, 60, 61, 64, 86, 68, 63, 64, 76, 66, 82, 60, 49, 71, 62, 93, 80, 66, 80, 56, 75, 79, 77, 78, 84, 78, 74, 90, 101, 86, 74, 56, 42, 76, 68, 64, 57, 59, 71, 75, 68, 83, 65, 52, 64, 66, 58, 81, 70, 77, 72, 69, 80, 59, 77, 64, 48, 87, 71, 67, 82, 82, 87, 68, 94, 82, 67, 90, 76, 82, 68, 70, 74, 58, 60, 77, 84, 69, 82, 83, 67, 66, 97, 76, 69, 76, 86, 87, 105, 75, 98, 67, 74, 91, 96, 102, 89, 126, 127, 158], "base": 65.92, "total": 7905}, {"code": "math.HO", "name": "History & Overview", "v": [17, 23, 15, 17, 22, 12, 11, 22, 11, 19, 14, 19, 12, 13, 11, 24, 15, 9, 20, 22, 9, 24, 11, 25, 16, 18, 22, 18, 16, 15, 6, 25, 17, 14, 14, 22, 18, 11, 14, 10, 27, 16, 16, 17, 14, 7, 16, 19, 28, 10, 12, 13, 13, 19, 16, 20, 16, 18, 20, 24, 11, 19, 21, 12, 18, 15, 21, 26, 23, 29, 20, 12, 21, 18, 24, 23, 17, 18, 10, 12, 11, 19, 14, 20, 22, 22, 22, 14, 16, 13, 18, 27, 21, 21, 24, 25, 31, 18, 24, 19, 22, 23, 21, 30, 48], "base": 16.83, "total": 1909}, {"code": "math.KT", "name": "K-Theory & Homology", "v": [9, 7, 16, 14, 9, 7, 10, 4, 12, 17, 18, 10, 18, 9, 4, 7, 13, 6, 15, 11, 13, 16, 10, 13, 12, 9, 9, 7, 5, 14, 13, 3, 20, 11, 9, 8, 8, 9, 7, 5, 9, 4, 6, 6, 11, 11, 13, 12, 10, 10, 8, 14, 10, 12, 7, 6, 11, 5, 15, 5, 5, 4, 5, 11, 7, 13, 10, 6, 7, 11, 12, 4, 11, 12, 7, 6, 15, 9, 13, 6, 10, 18, 9, 8, 9, 8, 11, 11, 8, 15, 13, 11, 16, 6, 5, 11, 6, 9, 12, 10, 8, 4, 7, 15, 22], "base": 11.08, "total": 1038}, {"code": "math.LO", "name": "Logic", "v": [50, 45, 59, 69, 53, 47, 48, 55, 56, 91, 57, 50, 58, 59, 55, 55, 64, 40, 50, 55, 53, 61, 40, 51, 46, 55, 53, 72, 40, 71, 48, 54, 57, 52, 55, 50, 53, 46, 55, 48, 57, 52, 48, 47, 63, 65, 51, 50, 32, 46, 59, 52, 38, 54, 48, 53, 74, 52, 45, 62, 41, 58, 74, 60, 65, 50, 47, 55, 50, 72, 59, 61, 85, 69, 60, 63, 65, 67, 53, 55, 68, 59, 65, 68, 67, 51, 76, 48, 58, 52, 81, 70, 53, 69, 75, 79, 66, 83, 99, 71, 82, 96, 86, 102, 128], "base": 56.67, "total": 6285}, {"code": "math.MG", "name": "Metric Geometry", "v": [29, 35, 35, 41, 22, 32, 32, 16, 39, 38, 27, 36, 25, 36, 31, 32, 40, 28, 41, 44, 31, 34, 27, 34, 22, 31, 28, 40, 37, 33, 39, 30, 42, 21, 26, 36, 26, 36, 29, 28, 32, 31, 32, 34, 38, 34, 35, 36, 27, 34, 33, 26, 27, 35, 40, 26, 18, 31, 33, 37, 22, 28, 36, 32, 44, 31, 32, 30, 30, 39, 25, 30, 26, 29, 25, 27, 24, 33, 43, 29, 25, 37, 35, 38, 42, 31, 38, 30, 38, 36, 27, 31, 26, 46, 36, 37, 28, 36, 44, 35, 42, 62, 68, 88, 125], "base": 31.83, "total": 3624}, {"code": "math.NA", "name": "Numerical Analysis", "v": [182, 167, 206, 204, 227, 209, 193, 178, 181, 211, 228, 215, 198, 207, 206, 172, 206, 191, 229, 180, 211, 226, 186, 242, 212, 211, 222, 224, 190, 221, 249, 182, 203, 227, 261, 238, 228, 229, 322, 247, 281, 268, 220, 230, 211, 249, 260, 250, 233, 226, 278, 197, 227, 197, 233, 215, 258, 265, 253, 251, 253, 230, 272, 241, 285, 289, 259, 249, 235, 328, 243, 268, 295, 297, 308, 308, 284, 207, 349, 241, 278, 288, 269, 272, 294, 280, 303, 299, 277, 328, 296, 279, 332, 356, 300, 300, 317, 273, 368, 342, 339, 438, 449, 425, 524], "base": 200.08, "total": 26990}, {"code": "math.NT", "name": "Number Theory", "v": [151, 145, 168, 145, 182, 190, 149, 137, 195, 227, 165, 180, 157, 145, 154, 172, 142, 151, 172, 150, 179, 219, 148, 191, 184, 171, 184, 158, 220, 244, 176, 177, 198, 204, 179, 189, 184, 184, 199, 170, 179, 180, 153, 198, 205, 189, 218, 181, 172, 173, 197, 178, 170, 195, 203, 196, 172, 189, 238, 164, 190, 178, 223, 154, 182, 190, 184, 205, 208, 217, 173, 187, 235, 205, 199, 190, 221, 201, 213, 193, 209, 243, 222, 212, 187, 205, 227, 245, 228, 204, 233, 257, 268, 283, 219, 268, 251, 237, 298, 238, 261, 320, 349, 407, 652], "base": 169.5, "total": 21456}, {"code": "math.OA", "name": "Operator Algebras", "v": [27, 24, 39, 40, 33, 37, 36, 28, 28, 33, 48, 31, 34, 25, 33, 33, 44, 38, 41, 27, 24, 31, 34, 30, 26, 29, 24, 28, 32, 42, 25, 29, 35, 29, 30, 32, 31, 23, 24, 27, 34, 20, 37, 41, 39, 36, 33, 39, 32, 30, 33, 32, 27, 19, 19, 24, 26, 26, 42, 26, 30, 36, 37, 33, 32, 33, 32, 26, 37, 38, 39, 46, 27, 37, 39, 32, 37, 32, 37, 28, 34, 34, 27, 46, 30, 30, 34, 37, 35, 34, 38, 34, 43, 43, 34, 43, 49, 44, 30, 54, 43, 46, 53, 66, 107], "base": 33.67, "total": 3635}, {"code": "math.OC", "name": "Optimization & Control", "v": [174, 220, 267, 200, 208, 176, 192, 165, 238, 259, 203, 201, 188, 226, 294, 217, 243, 206, 231, 175, 241, 273, 233, 284, 238, 264, 271, 262, 218, 312, 267, 199, 262, 248, 264, 269, 256, 229, 350, 274, 271, 320, 268, 209, 293, 272, 258, 241, 238, 244, 291, 277, 276, 278, 259, 258, 288, 304, 305, 254, 235, 299, 360, 257, 306, 256, 280, 255, 266, 321, 363, 286, 343, 319, 389, 336, 318, 301, 323, 245, 318, 347, 290, 358, 342, 300, 421, 367, 373, 328, 327, 276, 396, 417, 380, 333, 319, 339, 466, 487, 463, 420, 472, 438, 630], "base": 208.58, "total": 30566}, {"code": "math.PR", "name": "Probability", "v": [204, 202, 201, 202, 196, 221, 221, 208, 197, 229, 196, 229, 186, 169, 225, 227, 218, 170, 244, 187, 222, 211, 211, 243, 194, 185, 237, 247, 218, 239, 225, 210, 221, 215, 206, 223, 195, 190, 231, 198, 218, 208, 194, 183, 195, 209, 223, 209, 176, 165, 226, 159, 212, 204, 204, 201, 201, 189, 233, 198, 192, 170, 219, 187, 205, 187, 215, 197, 217, 242, 203, 218, 211, 207, 220, 193, 199, 182, 219, 168, 246, 251, 226, 264, 244, 223, 270, 217, 217, 217, 241, 197, 272, 279, 237, 292, 240, 237, 276, 285, 287, 317, 321, 363, 597], "base": 208.83, "total": 23327}, {"code": "math.QA", "name": "Quantum Algebra", "v": [25, 28, 27, 38, 26, 27, 33, 25, 29, 39, 35, 30, 24, 23, 24, 28, 22, 21, 27, 27, 19, 43, 42, 35, 29, 29, 35, 30, 38, 24, 24, 26, 28, 20, 24, 28, 15, 17, 36, 35, 21, 25, 30, 22, 24, 25, 25, 34, 20, 24, 36, 24, 24, 22, 21, 23, 37, 26, 41, 25, 30, 29, 36, 32, 36, 39, 28, 32, 24, 20, 24, 42, 22, 30, 28, 32, 19, 28, 35, 29, 34, 40, 35, 38, 34, 18, 36, 32, 36, 29, 29, 35, 48, 41, 39, 40, 46, 27, 35, 25, 35, 46, 44, 52, 67], "base": 30.17, "total": 3200}, {"code": "math.RA", "name": "Rings & Algebras", "v": [45, 40, 54, 41, 63, 54, 57, 69, 48, 67, 43, 67, 51, 52, 70, 61, 66, 48, 66, 51, 49, 49, 68, 72, 79, 43, 47, 62, 53, 81, 72, 67, 56, 60, 51, 44, 55, 45, 47, 53, 54, 41, 66, 57, 44, 34, 43, 58, 46, 43, 58, 58, 62, 55, 53, 65, 69, 53, 64, 56, 62, 43, 55, 54, 53, 66, 55, 54, 52, 57, 61, 52, 75, 68, 71, 63, 63, 67, 70, 48, 55, 47, 59, 70, 59, 48, 72, 72, 57, 63, 70, 72, 69, 70, 72, 102, 80, 82, 61, 56, 86, 81, 87, 136, 173], "base": 54.0, "total": 6433}, {"code": "math.RT", "name": "Representation Theory", "v": [84, 88, 67, 76, 66, 78, 65, 76, 67, 92, 71, 81, 65, 62, 82, 79, 72, 68, 71, 58, 73, 81, 73, 88, 69, 72, 81, 74, 69, 89, 81, 82, 67, 89, 77, 82, 68, 77, 68, 57, 84, 73, 84, 76, 89, 68, 67, 70, 59, 57, 80, 62, 77, 75, 82, 80, 80, 72, 87, 62, 78, 63, 90, 71, 67, 64, 77, 69, 77, 94, 75, 84, 73, 97, 87, 85, 99, 90, 98, 64, 87, 107, 85, 93, 82, 80, 87, 107, 83, 89, 108, 89, 111, 120, 80, 104, 104, 76, 95, 104, 79, 123, 133, 143, 187], "base": 75.92, "total": 8627}, {"code": "math.SG", "name": "Symplectic Geometry", "v": [15, 19, 20, 16, 23, 18, 19, 20, 22, 35, 35, 17, 13, 26, 26, 20, 30, 11, 17, 10, 22, 28, 21, 25, 9, 18, 22, 19, 19, 20, 11, 23, 17, 27, 26, 21, 17, 28, 19, 19, 15, 21, 17, 16, 22, 27, 27, 20, 17, 22, 20, 12, 33, 19, 21, 16, 21, 24, 36, 29, 16, 19, 19, 24, 18, 14, 26, 32, 26, 14, 26, 25, 27, 21, 24, 32, 31, 23, 17, 22, 24, 43, 25, 36, 21, 15, 28, 23, 20, 23, 28, 17, 31, 32, 28, 27, 19, 21, 18, 20, 24, 37, 40, 40, 32], "base": 21.58, "total": 2386}, {"code": "math.SP", "name": "Spectral Theory", "v": [28, 22, 25, 25, 20, 26, 17, 23, 21, 19, 18, 18, 24, 22, 29, 18, 13, 18, 25, 23, 38, 29, 15, 24, 22, 18, 27, 25, 22, 39, 17, 16, 16, 11, 25, 34, 21, 17, 25, 24, 15, 20, 24, 21, 16, 25, 17, 20, 19, 23, 22, 19, 19, 19, 18, 17, 19, 7, 20, 16, 21, 9, 19, 22, 31, 20, 26, 27, 21, 19, 27, 28, 16, 22, 18, 16, 18, 16, 28, 16, 21, 23, 31, 35, 22, 29, 24, 31, 33, 26, 15, 24, 27, 25, 20, 27, 36, 22, 30, 31, 28, 44, 35, 52, 57], "base": 21.83, "total": 2443}, {"code": "math.ST", "name": "Statistics Theory", "v": [72, 69, 62, 72, 65, 87, 62, 82, 64, 99, 81, 87, 78, 105, 95, 94, 90, 96, 95, 72, 104, 111, 77, 98, 74, 101, 95, 84, 87, 106, 102, 89, 86, 95, 101, 86, 76, 78, 89, 88, 87, 82, 102, 71, 72, 92, 63, 87, 60, 72, 75, 58, 81, 89, 72, 78, 85, 97, 91, 65, 78, 70, 100, 62, 99, 81, 76, 61, 59, 113, 90, 74, 84, 118, 87, 104, 103, 85, 101, 67, 88, 103, 78, 79, 80, 114, 92, 91, 91, 101, 88, 77, 80, 120, 120, 101, 106, 125, 134, 105, 143, 142, 157, 152, 196], "base": 75.17, "total": 9508}], "meta": {"baselineYear": "2018", "harvested": 385506, "basis": "announced", "first": "2018-01", "last": "2026-09", "archive": "math", "label": "mathematics"}}</script>
+<script>
+(function () {
+  "use strict";
+  var D = JSON.parse(document.getElementById("data").textContent);
+  var months = D.months, cats = D.cats, total = D.total, meta = D.meta || {};
+  var N = months.length;
+  var BASE_YEAR = meta.baselineYear || "2019";
+  var PFX = (meta.archive || "math") + ".";
+
+  /* the archive's name and prefix, for pages built for other archives */
+  if (meta.label) {
+    document.querySelectorAll(".field").forEach(function (el) { el.textContent = meta.label; });
+  }
+  document.querySelectorAll(".prefix").forEach(function (el) { el.textContent = PFX + "*"; });
+  document.querySelectorAll("[data-archive]").forEach(function (el) {
+    el.hidden = el.dataset.archive !== (meta.archive || "math");
+  });
+  var MN = ["January","February","March","April","May","June","July",
+            "August","September","October","November","December"];
+  var MA = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+  var Y0 = parseInt(months[0].slice(0, 4), 10);
+  var Y1 = parseInt(months[N - 1].slice(0, 4), 10);
+  var MARK = months.indexOf("2025-08");   // where growth visibly steps up
+
+  var sel = "all", metric = "count", order = "volume";
+  var grid = document.getElementById("grid");
+  var tip = document.getElementById("tip");
+  var cap = document.getElementById("cap");
+
+  var fmt = function (n) { return Math.round(n).toLocaleString("en-US"); };
+  var pct = function (x) { return (x >= 0 ? "+" : "−") + Math.abs(x).toFixed(1) + "%"; };
+  var pretty = function (mm) { return MA[parseInt(mm.slice(5), 10) - 1] + " " + mm.slice(0, 4); };
+
+  document.getElementById("eyebrow").textContent =
+    "arXiv · primary category " + PFX + "* · announced " + pretty(months[0]) + " – " + pretty(months[N - 1]);
+  document.getElementById("btn-index").textContent = "Indexed, " + BASE_YEAR + " = 100";
+
+  /* ---- which years exist for each calendar month ---- */
+  var yearsFor = {};
+  for (var m = 1; m <= 12; m++) {
+    var ys = [];
+    for (var y = Y0; y <= Y1; y++) {
+      if (months.indexOf(y + "-" + String(m).padStart(2, "0")) >= 0) ys.push(y);
+    }
+    yearsFor[m] = ys;
+  }
+
+  var monthSel = document.getElementById("sel-month");
+  monthSel.options[0].textContent = "All months (" + Y0 + "–" + Y1 + ")";
+  for (var mi = 1; mi <= 12; mi++) {
+    if (!yearsFor[mi].length) continue;
+    var yy = yearsFor[mi];
+    var o = document.createElement("option");
+    o.value = String(mi);
+    o.textContent = MN[mi - 1] + " (" + yy[0] + "–" + yy[yy.length - 1] + ")";
+    monthSel.appendChild(o);
+  }
+
+  cats.forEach(function (c) {
+    c.idx = c.v.map(function (x) { return c.base ? (100 * x / c.base) : 0; });
+  });
+
+  function seriesFor(c) {
+    if (sel === "all") {
+      return { labels: months, counts: c.v, vals: metric === "count" ? c.v : c.idx };
+    }
+    var m = parseInt(sel, 10), ys = yearsFor[m], counts = [], vals = [], labels = [];
+    ys.forEach(function (y) {
+      var i = months.indexOf(y + "-" + String(m).padStart(2, "0"));
+      counts.push(c.v[i]);
+      vals.push(metric === "count" ? c.v[i] : c.idx[i]);
+      labels.push(String(y));
+    });
+    return { labels: labels, counts: counts, vals: vals };
+  }
+
+  function stats(c) {
+    var s = seriesFor(c), n = s.vals.length;
+    var back = sel === "all" ? 12 : 1;
+    var prev = n > back ? s.counts[n - 1 - back] : null;
+    var yoy = (prev) ? 100 * (s.counts[n - 1] / prev - 1) : null;
+    return { s: s, last: s.counts[n - 1], yoy: yoy, max: Math.max.apply(null, s.vals) };
+  }
+
+  /* ---- headline ---- */
+  function sumRange(a, i, j) { var t = 0; for (var k = i; k <= j; k++) t += a[k]; return t; }
+  var haveYear = N >= 12, haveTwo = N >= 24;
+  var last12 = haveYear ? sumRange(total, N - 12, N - 1) : null;
+  var prev12 = haveTwo ? sumRange(total, N - 24, N - 13) : null;
+  var iBase = months.indexOf(BASE_YEAR + "-01");
+  var baseYearTotal = iBase >= 0 && iBase + 11 < N ? sumRange(total, iBase, iBase + 11) : null;
+  var latestYoY = N > 12 ? 100 * (total[N - 1] / total[N - 13] - 1) : null;
+
+  /* A class rises or falls only when the change between the two 12-month
+     totals a and b exceeds twice its counting noise: |b - a| > 2 sqrt(a + b).
+     Smaller changes, common in classes with a few papers a month, are flat. */
+  var risers = [], fallers = [], flat = [];
+  if (haveTwo) {
+    cats.forEach(function (c) {
+      var a = sumRange(c.v, N - 24, N - 13), b = sumRange(c.v, N - 12, N - 1);
+      var z = a + b ? (b - a) / Math.sqrt(a + b) : 0;
+      (z > 2 ? risers : z < -2 ? fallers : flat).push(c.code);
+    });
+  }
+  function names(list) {
+    if (list.length > 3) return list.length + " classes";
+    return list.length < 3 ? list.join(" and ") : list[0] + ", " + list[1] + " and " + list[2];
+  }
+  function part(list, one, many) {
+    return list.length ? "; " + names(list) + " " + (list.length === 1 ? one : many) : "";
+  }
+  document.getElementById("rise-note").textContent = !haveTwo ? "" :
+    (risers.length === cats.length
+      ? "Over the last twelve months all " + cats.length + " classes rose."
+      : "Over the last twelve months " + risers.length + " of the " + cats.length +
+        " classes rose" + part(flat, "was flat", "were flat") + part(fallers, "fell", "fell") + ".");
+
+  document.getElementById("kpis").innerHTML = [
+    last12 === null ? "" :
+      '<div class="kpi hero"><div class="label">' + pretty(months[N - 12]) + " – " + pretty(months[N - 1]) +
+      '</div><div class="value">' + fmt(last12) + '</div><div class="sub">papers' +
+      (prev12 ? " · " + pct(100 * (last12 / prev12 - 1)) + " vs the year before" : "") + '</div></div>',
+    '<div class="kpi"><div class="label">Latest month</div><div class="value">' + fmt(total[N - 1]) +
+      '</div><div class="sub">' + pretty(months[N - 1]) +
+      (latestYoY === null ? "" : " · " + pct(latestYoY) + " year over year") + '</div></div>',
+    baseYearTotal === null ? "" :
+      '<div class="kpi"><div class="label">Calendar ' + BASE_YEAR + '</div><div class="value">' +
+      fmt(baseYearTotal) + '</div><div class="sub">papers · the pre-LLM baseline</div></div>',
+    '<div class="kpi"><div class="label">Subject classes</div><div class="value">' + cats.length + '</div>' +
+      '<div class="sub">' + (haveTwo ? risers.length + " rose vs the year before" : "&nbsp;") + '</div></div>'
+  ].join("");
+
+  document.getElementById("method-count").innerHTML =
+    (meta.harvested ? meta.harvested.toLocaleString("en-US") + " papers with a " + PFX + "* category were announced " +
+      pretty(months[0]) + " – " + pretty(months[N - 1]) + ". " : "") +
+    "The API can only be searched by submission date, so papers were fetched by submission month, " +
+    "starting a little before the first month shown to catch papers submitted earlier and announced later. " +
+    "Every submission month matched the API's own reported total.";
+  document.getElementById("scale-note").innerHTML =
+    "In <b>Count</b> every panel carries its own vertical scale, so shapes are comparable but heights are not. " +
+    "<b>Indexed</b> puts all classes on one shared scale against their own " + BASE_YEAR + " average.";
+
+  /* ---- geometry ---- */
+  var W = 272, H = 126, PT = 13, PB = 18, PL = 2, PR = 2;
+  var plotH = H - PT - PB, plotW = W - PL - PR;
+
+  function barPath(x, y, w, h, r) {
+    r = Math.min(r, w / 2, h);
+    return "M" + x + " " + (y + h) + "L" + x + " " + (y + r) +
+      "Q" + x + " " + y + " " + (x + r) + " " + y +
+      "L" + (x + w - r) + " " + y +
+      "Q" + (x + w) + " " + y + " " + (x + w) + " " + (y + r) +
+      "L" + (x + w) + " " + (y + h) + "Z";
+  }
+
+  var sharedTop = 100, cache = {};
+
+  function panelSVG(c, st) {
+    var vals = st.s.vals, n = vals.length;
+    var top = ((metric === "count" ? st.max : sharedTop) * 1.08) || 1;
+    var yAt = function (v) { return PT + plotH - (v / top) * plotH; };
+    var base = PT + plotH;
+    var body = "", ticks = "";
+
+    if (sel === "all") {
+      var xAt = function (i) { return PL + (i * plotW) / (n - 1); };
+      for (var y = Y0; y <= Y1; y++) {
+        var j = months.indexOf(y + "-01");
+        if (j < 0) continue;
+        ticks += '<line x1="' + xAt(j).toFixed(1) + '" y1="' + PT + '" x2="' + xAt(j).toFixed(1) +
+          '" y2="' + base + '" stroke="var(--grid)" stroke-width="1" vector-effect="non-scaling-stroke"/>';
+      }
+      if (MARK >= 0) {
+        ticks += '<line x1="' + xAt(MARK).toFixed(1) + '" y1="' + (PT - 3) + '" x2="' + xAt(MARK).toFixed(1) +
+          '" y2="' + base + '" stroke="var(--muted)" stroke-width="1" opacity="0.5" vector-effect="non-scaling-stroke"/>';
+      }
+      var line = "";
+      for (var i = 0; i < n; i++) line += (i ? "L" : "M") + xAt(i).toFixed(1) + " " + yAt(vals[i]).toFixed(1) + " ";
+      body =
+        '<path d="M' + PL + " " + base + line.replace(/^M/, "L") + "L" + (PL + plotW) + " " + base + 'Z" fill="var(--series-wash)"/>' +
+        '<path d="' + line.trim() + '" fill="none" stroke="var(--series)" stroke-width="2" ' +
+          'stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>' +
+        '<circle cx="' + xAt(n - 1).toFixed(1) + '" cy="' + yAt(vals[n - 1]).toFixed(1) +
+          '" r="3.2" fill="var(--series)" stroke="var(--surface)" stroke-width="2" vector-effect="non-scaling-stroke"/>' +
+        '<text x="' + PL + '" y="' + (H - 5) + '" font-size="9" fill="var(--muted)" font-family="ui-monospace, Menlo, monospace">' + Y0 + '</text>' +
+        '<text x="' + (PL + plotW) + '" y="' + (H - 5) + '" font-size="9" fill="var(--muted)" text-anchor="end" font-family="ui-monospace, Menlo, monospace">' + Y1 + '</text>';
+    } else {
+      var slot = plotW / n, bw = Math.min(slot - 4, 26);
+      for (var k = 0; k < n; k++) {
+        var bx = PL + k * slot + (slot - bw) / 2;
+        var bh = Math.max(1, base - yAt(vals[k]));
+        body += '<path d="' + barPath(bx, base - bh, bw, bh, 3) + '" fill="' +
+          (k === n - 1 ? "var(--series)" : "var(--series-soft)") + '"/>';
+        ticks += '<text x="' + (bx + bw / 2).toFixed(1) + '" y="' + (H - 5) +
+          '" font-size="8.5" fill="var(--muted)" text-anchor="middle" ' +
+          'font-family="ui-monospace, Menlo, monospace">' + st.s.labels[k].slice(2) + "</text>";
+      }
+    }
+
+    var peak = metric === "count" ? fmt(st.max) : Math.round(st.max) + "";
+    return '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="' + c.code + ", " + c.name + '">' +
+      ticks + body +
+      '<line x1="' + PL + '" y1="' + base + '" x2="' + (PL + plotW) + '" y2="' + base +
+        '" stroke="var(--rule)" stroke-width="1" vector-effect="non-scaling-stroke"/>' +
+      '<text x="' + PL + '" y="9" font-size="9" fill="var(--muted)" font-family="ui-monospace, Menlo, monospace">' + peak + '</text>' +
+      '<line class="cross" x1="0" y1="' + PT + '" x2="0" y2="' + base +
+        '" stroke="var(--series)" stroke-width="1" vector-effect="non-scaling-stroke" opacity="0"/>' +
+      '</svg>';
+  }
+
+  function render() {
+    cache = {};
+    cats.forEach(function (c) { cache[c.code] = stats(c); });
+    sharedTop = Math.max.apply(null, cats.map(function (c) { return cache[c.code].max; }));
+
+    var list = cats.slice().sort(function (x, y) {
+      if (order === "alpha") return x.code < y.code ? -1 : 1;
+      if (order === "growth") {
+        var a = cache[y.code].yoy, b = cache[x.code].yoy;
+        return (a === null ? -1e9 : a) - (b === null ? -1e9 : b);
+      }
+      return y.total - x.total;
+    });
+
+    grid.innerHTML = list.map(function (c) {
+      var st = cache[c.code];
+      return '<div class="panel" tabindex="0" data-code="' + c.code + '">' +
+        '<div class="p-head"><span class="p-code mono">' + c.code + '</span>' +
+        '<span class="p-last mono">' + (st.yoy === null ? "—" : pct(st.yoy)) + '</span></div>' +
+        '<div class="p-name">' + c.name + '</div>' + panelSVG(c, st) + '</div>';
+    }).join("");
+
+    var compareNote = function () {
+      if (sel === "all") {
+        return N > 12
+          ? "Top right compares " + pretty(months[N - 1]) + " with " + pretty(months[N - 13]) +
+            " \u2014 the same month one year earlier, not a 12-month total."
+          : "";
+      }
+      var yl = yearsFor[parseInt(sel, 10)];
+      return yl.length > 1
+        ? "Top right compares " + yl[yl.length - 1] + " with " + yl[yl.length - 2] + "."
+        : "";
+    };
+    var scaleNote = metric === "count"
+      ? "Each panel has its own vertical scale; the figure at top left is its peak."
+      : "All panels share one vertical scale: 100 = that class's own " + BASE_YEAR + " monthly average.";
+    var m = parseInt(sel, 10);
+    cap.textContent = (sel === "all"
+      ? "Monthly counts, " + pretty(months[0]) + " – " + pretty(months[N - 1]) + ". "
+      : MN[m - 1] + " of each year, " + yearsFor[m][0] + "–" + yearsFor[m][yearsFor[m].length - 1] +
+        "; the solid bar is the most recent year. ") +
+      scaleNote + " " + compareNote();
+
+    document.getElementById("tsum").textContent = sel === "all"
+      ? "Table view — all " + N + " months × " + cats.length + " subject classes"
+      : "Table view — " + MN[m - 1] + " by year × " + cats.length + " subject classes";
+
+    buildTable();
+  }
+
+  function buildTable() {
+    var cs = cats.slice().sort(function (x, y) { return x.code < y.code ? -1 : 1; });
+    var h = "<table><thead><tr><th>" + (sel === "all" ? "Month" : "Year") + "</th>" +
+      cs.map(function (c) { return "<th>" + c.code.replace(PFX, "") + "</th>"; }).join("") +
+      "<th>Total</th><th>Δ%</th></tr></thead><tbody>";
+    var rows;
+    if (sel === "all") {
+      rows = months.map(function (mm, i) { return { label: mm, i: i }; });
+    } else {
+      var m = parseInt(sel, 10);
+      rows = yearsFor[m].map(function (y) {
+        return { label: String(y), i: months.indexOf(y + "-" + String(m).padStart(2, "0")) };
+      });
+    }
+    var back = sel === "all" ? 12 : 1;
+    rows.forEach(function (r, k) {
+      var t = total[r.i];
+      var prevT = k >= back ? total[rows[k - back].i] : null;
+      h += "<tr><td class='mono'>" + r.label + "</td>" +
+        cs.map(function (c) { return "<td>" + c.v[r.i] + "</td>"; }).join("") +
+        "<td><b>" + t + "</b></td><td>" + (prevT ? pct(100 * (t / prevT - 1)) : "—") + "</td></tr>";
+    });
+    document.getElementById("tablewrap").innerHTML = h + "</tbody></table>";
+  }
+
+  /* ---- interaction ---- */
+  var byCode = {};
+  cats.forEach(function (c) { byCode[c.code] = c; });
+
+  function showAt(panel, i, cx, cy) {
+    var c = byCode[panel.dataset.code], st = cache[c.code], n = st.s.vals.length;
+    i = Math.max(0, Math.min(n - 1, i));
+    var svg = panel.querySelector("svg"), cross = svg.querySelector(".cross");
+    var x = sel === "all" ? PL + (i * plotW) / (n - 1) : PL + (i + 0.5) * (plotW / n);
+    cross.setAttribute("x1", x); cross.setAttribute("x2", x);
+    cross.setAttribute("opacity", "0.55");
+
+    var v = metric === "count" ? fmt(st.s.counts[i]) + " papers" : "index " + Math.round(st.s.vals[i]);
+    var lab = sel === "all" ? st.s.labels[i] : MA[parseInt(sel, 10) - 1] + " " + st.s.labels[i];
+    var back = sel === "all" ? 12 : 1;
+    var delta = (i >= back && st.s.counts[i - back] > 0)
+      ? " · " + pct(100 * (st.s.counts[i] / st.s.counts[i - back] - 1)) + " YoY" : "";
+    tip.innerHTML = '<span class="t-cat">' + c.code + " · " + c.name + "</span><b>" + lab + "</b> — " + v + delta;
+    tip.classList.add("on");
+    var r = tip.getBoundingClientRect();
+    tip.style.left = Math.min(cx + 14, window.innerWidth - r.width - 8) + "px";
+    tip.style.top = Math.max(8, cy - r.height - 12) + "px";
+  }
+
+  function hide(panel) {
+    if (panel) { var cr = panel.querySelector(".cross"); if (cr) cr.setAttribute("opacity", "0"); }
+    tip.classList.remove("on");
+  }
+
+  grid.addEventListener("mousemove", function (e) {
+    var panel = e.target.closest(".panel");
+    if (!panel) return;
+    var n = cache[panel.dataset.code].s.vals.length;
+    var box = panel.querySelector("svg").getBoundingClientRect();
+    var frac = (e.clientX - box.left) / box.width;
+    showAt(panel, sel === "all" ? Math.round(frac * (n - 1)) : Math.floor(frac * n), e.clientX, e.clientY);
+  });
+  grid.addEventListener("mouseout", function (e) {
+    var panel = e.target.closest(".panel");
+    if (panel && !panel.contains(e.relatedTarget)) hide(panel);
+  });
+
+  var kbi = -1;
+  grid.addEventListener("keydown", function (e) {
+    var panel = e.target.closest(".panel");
+    if (!panel || (e.key !== "ArrowLeft" && e.key !== "ArrowRight")) return;
+    e.preventDefault();
+    var n = cache[panel.dataset.code].s.vals.length;
+    if (kbi < 0) kbi = n - 1;
+    kbi = Math.max(0, Math.min(n - 1, kbi + (e.key === "ArrowRight" ? 1 : -1)));
+    var box = panel.querySelector("svg").getBoundingClientRect();
+    showAt(panel, kbi, box.left + box.width * ((kbi + 0.5) / n), box.top);
+  });
+  grid.addEventListener("focusin", function () { kbi = -1; });
+  grid.addEventListener("focusout", function (e) {
+    var panel = e.target.closest(".panel");
+    if (panel) hide(panel);
+  });
+
+  function wire(id, set) {
+    var el = document.getElementById(id);
+    el.addEventListener("click", function (e) {
+      var b = e.target.closest("button");
+      if (!b) return;
+      el.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+      set(b.dataset.v);
+      render();
+    });
+  }
+  wire("seg-metric", function (v) { metric = v; });
+  wire("seg-sort", function (v) { order = v; });
+  monthSel.addEventListener("change", function () { sel = monthSel.value; render(); });
+  render();
+})();
+</script>
+
+<script>
+/* One grouped-column chart, four years, Jan onward -- so the reader can see
+   which year the rise begins in. Years are ordered, so they take a one-hue
+   blue ordinal ramp (oldest palest, newest strongest), validated against both
+   surfaces. Within a month the bars are 2px apart; the air between months is
+   much wider, so each cluster reads as one month. */
+(function () {
+  "use strict";
+  var D = JSON.parse(document.getElementById("data").textContent);
+  var months = D.months, total = D.total;
+  var PFX = ((D.meta || {}).archive || "math") + ".";
+  var MA = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  var fmt = function (n) { return Math.round(n).toLocaleString("en-US"); };
+  var sign = function (x) { return (x >= 0 ? "+" : "−") + Math.abs(x).toFixed(1) + "%"; };
+
+  var lastY = parseInt(months[months.length - 1].slice(0, 4), 10);
+  var NM = parseInt(months[months.length - 1].slice(5), 10);   // Jan..this month
+  var TOK = ["var(--yr1)", "var(--yr2)", "var(--yr3)", "var(--yr4)"];
+  var SPAN = 4;                                                // years shown
+
+  function valsFor(y) {
+    var out = [];
+    for (var m = 1; m <= NM; m++) {
+      var i = months.indexOf(y + "-" + String(m).padStart(2, "0"));
+      out.push(i < 0 ? null : total[i]);
+    }
+    return out;
+  }
+  function ytd(a) { return a.reduce(function (t, v) { return t + (v || 0); }, 0); }
+
+  var years = [];
+  for (var y = lastY - SPAN + 1; y <= lastY; y++) {
+    if (months.indexOf(y + "-01") >= 0) years.push(y);
+  }
+  var series = years.map(function (yr, k) {
+    return { year: yr, v: valsFor(yr), tok: TOK[TOK.length - years.length + k] };
+  });
+  var NS = series.length;
+
+  document.getElementById("yoy-h").textContent =
+    "January–" + MA[NM - 1] + " compared across years · whole field · " + PFX + "* primary";
+
+  document.getElementById("yoy-legend").innerHTML = series.map(function (d) {
+    return '<span><i class="yoy-key" style="background:' + d.tok + '"></i>' + d.year + "</span>";
+  }).join("");
+
+  var tots = series.map(function (d) { return ytd(d.v); });
+  document.getElementById("yoy-ytd").innerHTML = series.map(function (d, k) {
+    return "<b>" + d.year + "</b> " + fmt(tots[k]) +
+      (k ? " (" + sign(100 * (tots[k] / tots[k - 1] - 1)) + ")" : "");
+  }).join(" · ");
+
+  var yMax = 0;
+  series.forEach(function (d) { d.v.forEach(function (v) { if (v > yMax) yMax = v; }); });
+  var stp = Math.pow(10, Math.floor(Math.log(yMax) / Math.LN10)) / 2;
+  var TOP = Math.ceil(yMax / stp) * stp;
+
+  var W = 760, H = 300, PL = 46, PR = 14, PT = 20, PB = 30;
+  var plotW = W - PL - PR, plotH = H - PT - PB;
+  var GAP = 2, AIR = 18;                       // 2px inside a month, 18px between
+  var band = plotW / NM;
+  var bw = Math.min(24, (band - (NS - 1) * GAP - AIR) / NS);
+  var clus = NS * bw + (NS - 1) * GAP;
+  var Y = function (v) { return PT + plotH - (v / TOP) * plotH; };
+
+  var g = "";
+  [0, TOP / 4, TOP / 2, (3 * TOP) / 4, TOP].forEach(function (t) {
+    g += '<line x1="' + PL + '" x2="' + (PL + plotW) + '" y1="' + Y(t) + '" y2="' + Y(t) +
+         '" stroke="var(--grid)" stroke-width="1"/>' +
+         '<text x="' + (PL - 8) + '" y="' + (Y(t) + 3.5) + '" text-anchor="end" font-size="10"' +
+         ' fill="var(--muted)" font-family="ui-monospace, Menlo, monospace">' + fmt(t) + '</text>';
+  });
+
+  function col(x, v, tok) {
+    if (v == null) return "";
+    var h = (v / TOP) * plotH;
+    var yt = Y(v), r = Math.min(4, h / 2, bw / 2);
+    return '<path d="M' + x + ' ' + (yt + h) + 'V' + (yt + r) +
+      'a' + r + ' ' + r + ' 0 0 1 ' + r + ' -' + r +
+      'h' + (bw - 2 * r) + 'a' + r + ' ' + r + ' 0 0 1 ' + r + ' ' + r +
+      'V' + (yt + h) + 'Z" fill="' + tok + '"/>';
+  }
+
+  var bars = "", xlab = "";
+  for (var i = 0; i < NM; i++) {
+    var bx = PL + i * band + (band - clus) / 2;
+    var inner = "";
+    series.forEach(function (d, k) { inner += col(bx + k * (bw + GAP), d.v[i], d.tok); });
+    bars += '<g class="yb" data-m="' + i + '">' +
+            '<rect x="' + (PL + i * band) + '" y="' + PT + '" width="' + band +
+            '" height="' + plotH + '" fill="transparent"/>' + inner + '</g>';
+    xlab += '<text x="' + (PL + i * band + band / 2) + '" y="' + (H - 11) +
+            '" text-anchor="middle" font-size="10.5" fill="var(--muted)">' + MA[i] + '</text>';
+  }
+
+  // one direct label: the newest year's latest month, the extreme of the chart
+  var lastV = series[NS - 1].v[NM - 1], elab = "";
+  if (lastV != null) {
+    var lx = PL + (NM - 1) * band + (band - clus) / 2 + (NS - 1) * (bw + GAP) + bw / 2;
+    elab = '<text x="' + lx + '" y="' + (Y(lastV) - 6) + '" text-anchor="middle" font-size="11"' +
+           ' font-weight="600" fill="var(--ink)" font-family="ui-monospace, Menlo, monospace">' +
+           fmt(lastV) + '</text>';
+  }
+
+  document.getElementById("yoy").innerHTML =
+    '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Monthly ' + PFX + '* primary papers announced in ' +
+    years.join(", ") + ', January to ' + MA[NM - 1] + '">' + g + xlab + bars + elab +
+    '<line x1="' + PL + '" x2="' + (PL + plotW) + '" y1="' + (PT + plotH) + '" y2="' + (PT + plotH) +
+    '" stroke="var(--rule)" stroke-width="1"/></svg>';
+
+  var host = document.getElementById("yoy");
+  var tip = document.getElementById("tip");
+  host.addEventListener("mousemove", function (e) {
+    var grp = e.target.closest ? e.target.closest(".yb") : null;
+    if (!grp) { tip.classList.remove("on"); return; }
+    var i = +grp.dataset.m, rows = "";
+    series.forEach(function (d, k) {
+      var v = d.v[i];
+      if (v == null) return;
+      var pr = k ? series[k - 1].v[i] : null;
+      rows += "<b>" + d.year + "</b> " + fmt(v) +
+        (pr ? " (" + sign(100 * (v / pr - 1)) + ")" : "") + "<br>";
+    });
+    tip.innerHTML = '<span class="t-cat">' + MA[i] + "</span>" + rows;
+    tip.classList.add("on");
+    tip.style.left = Math.min(e.clientX + 14, innerWidth - tip.offsetWidth - 8) + "px";
+    tip.style.top = Math.max(8, e.clientY - tip.offsetHeight - 12) + "px";
+  });
+  host.addEventListener("mouseleave", function () { tip.classList.remove("on"); });
+
+  document.getElementById("yoy-foot").textContent =
+    "The same months compared across years, so the partial current year is not penalised. "
+    + "Each percentage is against the year immediately before.";
+})();
+</script>
