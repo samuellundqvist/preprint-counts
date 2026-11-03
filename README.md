@@ -3,7 +3,7 @@
 Monthly counts of new papers on arXiv in every subject class of an archive,
 counted by the month arXiv announced them, with an interactive page to explore
 them. The repository holds the data for mathematics (`math.*`, January 2018 to
-September 2026). The same scripts build the counts for other archives such as
+October 2026). The same scripts build the counts for other archives such as
 computer science (`cs.*`).
 
 Thank you to arXiv for use of its open access interoperability. This project
@@ -42,7 +42,7 @@ policies or opinions of, arXiv.
 | `aggregate.py` | Counts papers per month and class; writes the CSVs and `viz_data.json` |
 | `update_page.py` | Puts the counts into the page |
 | `categories.tsv` | Names of all subject classes, from arXiv's [category taxonomy](https://arxiv.org/category_taxonomy) |
-| `data/math/raw/papers_2017-11_2026-09.jsonl.gz` | One line per paper (391,193 papers): identifier, v1 date, last-updated date, primary category, all categories |
+| `data/math/raw/papers_2017-11_2026-10.jsonl.gz` | One line per paper (401,507 papers): identifier, v1 date, last-updated date, primary category, all categories |
 | `data/math/raw/manifest.tsv` | Papers per submission month, as the API reported them |
 | `data/math/arxiv_math_primary.csv` | Papers per announcement month and class, by primary category |
 | `data/math/arxiv_math_anycat.csv` | The same, counting cross-listed papers in every class they list |

@@ -19,7 +19,7 @@ ARCHIVE = os.environ.get("ARXIV_ARCHIVE", "math")
 
 SUB_LO = "2017-11"      # first harvested submission month
 LO = "2018-01"          # first announcement month shown
-HI = "2026-09"          # last announcement month shown
+HI = "2026-10"          # last announcement month shown
 
 # How the page names the field: "New papers in every <label> subject class".
 LABELS = {
